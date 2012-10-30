@@ -386,6 +386,91 @@ sub set_sequences { my ($self, $sequences) = @_;
 ###############################################################################
 ###############################################################################
 
+=head1 ACCESSOR METHODS
+
+=head2 get_count
+
+    Title   : get_count
+    Usage   : $instance_no = $obj->get_count
+    Function: 
+    Returns : Number of istances for this class
+    Args    :
+
+=head2 get_file
+
+    Title   : get_file
+    Usage   : $file_path = $obj->get_file
+    Function:
+    Returns : The file name of the alignment
+    Args    :
+
+=head2 get_format
+
+    Title   : get_format
+    Usage   : $format = $obj->get_format
+    Function:
+    Returns : The alignment format (fasta, phylip, etc.)
+    Args    :
+
+=head2 get_identifiers
+
+    Title   : get_identifiers
+    Usage   : $identifiers $obj->get_identifiers
+    Function:
+    Returns : An array reference with all the identifiers in an alignment
+    Args    :
+
+=head2 get_seq_length
+
+    Title   : get_seq_length
+    Usage   : $long = $obj->get_seq_length
+    Function:
+    Returns : The longitude of all the sequences in an alignment
+    Args    :
+
+=head2 get_sequences
+
+    Title   : get_sequences
+    Usage   : $sequences = $obj->get_sequences
+    Function:
+    Returns : An array reference with all the sequences in an alignment
+    Args    :
+
+
+=head1 MUTATOR METHODS
+
+=head2 set_file
+
+    Title   : set_file
+    Usage   : $obj->set_file('filename')
+    Function: Set the file path for an alignment
+    Returns : 
+    Args    : String
+
+=head2 set_format
+
+    Title   : set_format
+    Usage   : $obj->set_format('fasta')
+    Function: Set the file format for an alignment
+    Returns :
+    Args    : String
+
+=head2 set_identifiers
+
+    Title   : set_identifiers
+    Usage   : $obj->set_identifiers(\@array_ids)
+    Function: Change the identifiers for all the sequences in the alignment
+    Returns :
+    Args    : List
+
+=head2 set_sequences
+
+    Title   : set_sequences
+    Usage   : $obj->set_sequences(\@array_seqs)
+    Function: Change the sequences in the alignment
+    Returns :
+    Args    : List
+
 =head1 AUTHOR - Hector Valverde
 
 Hector Valverde, C<< <hvalverde@uma.es> >>
@@ -439,7 +524,6 @@ under the terms of either: the GNU General Public License as published
 by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
-
 
 =cut
 

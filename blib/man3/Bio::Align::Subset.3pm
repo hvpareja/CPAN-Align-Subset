@@ -124,7 +124,7 @@
 .\" ========================================================================
 .\"
 .IX Title "Bio::Align::Subset 3"
-.TH Bio::Align::Subset 3 "2012-10-29" "perl v5.10.0" "User Contributed Perl Documentation"
+.TH Bio::Align::Subset 3 "2012-10-30" "perl v5.10.0" "User Contributed Perl Documentation"
 .\" For nroff, turn off justification.  Always turn off hyphenation; it makes
 .\" way too many mistakes in technical documents.
 .if n .ad l
@@ -136,59 +136,203 @@ Bio::Align::Subset \- A BioPerl module to generate new alignments as subset from
 Version 0.01
 .SH "SYNOPSIS"
 .IX Header "SYNOPSIS"
-Given an array of codon positions and an alignment, the function alignSubset
-returns a new alignment with the codons at those positions from the original
-alignment.
-.PP
-Usage example:
-.PP
-.Vb 1
+.Vb 3
+\&    use strict;
+\&    use warnings;
+\&    use Data::Dumper;
+\&    
 \&    use Bio::Align::Subset;
 \&    
-\&    # Align file name
-\&    my $inAlignFile = "align.fasta";
-\&    # Load the file content in a file handle (FH)
-\&    open(FH, $inAlignFile);
-\&    # Align data
-\&    my @alignData = <FH>;
+\&    # The alignment in a file
+\&    my $filename = "alignmentfile.fas";
+\&    # The format
+\&    my $format = "fasta";
 \&    
-\&    # Build the codon sets
-\&    my @set1 = ();
-\&    my @set2 = ();
-\&    my @set3 = ();
+\&    # The subset of codons
+\&    my $subset = [1,12,25,34,65,100,153,156,157,158,159,160,200,201,202,285];
 \&    
-\&    # Store the set references
-\&    my $setRef1 = \e@set1;
-\&    my $setRef2 = \e@set2;
-\&    my $setRef3 = \e@set3;
+\&    # Create the object
+\&    my $obj = Bio::Align::Subset\->new(
+\&                                      file => $filename,
+\&                                      format => $format
+\&                                    );
 \&    
-\&    # Construct a new object
-\&    my $subAlign = Bio::Align::Subset\->new();
-\&    # Pass set references by arguments
-\&    $subAlign\->subsetsReferences = [$setRef1, $setRef2, $setRef3];
-\&    # Pass the original alignment data
-\&    $subAlign\->originalAlignFH = @alignData;
-\&    # Generates the new alignments as strings
-\&    my @subSets = $subAlign\->launch();
-\&    
-\&    # Store each subset in a file
-\&    for(my $i=0;$i<=$#subSets;$i++){
-\&        open("FOUT".$i,">file".$i.".fasta");
-\&        print FOUT, $subSets[$i];
-\&        fclose(FOUT);
-\&    }
+\&    # View the result
+\&    print Dumper($obj\->build_subset($subset));
 .Ve
-.SH "EXPORT"
-.IX Header "EXPORT"
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
-.SH "SUBROUTINES/METHODS"
-.IX Header "SUBROUTINES/METHODS"
-.SS "alignSubset"
-.IX Subsection "alignSubset"
-.SH "AUTHOR"
-.IX Header "AUTHOR"
-Hector Valverde and Juan Carlos Aledo, \f(CW\*(C`<hvalverdeuma.es>\*(C'\fR
+.SH "DESCRIPTION"
+.IX Header "DESCRIPTION"
+Given an array of codon positions and an alignment, the function
+Bio::Align::Subset\->build_subset returns a new alignment with the codons at
+those positions from the original alignment.
+.SH "CONSTRUCTOR"
+.IX Header "CONSTRUCTOR"
+.SS "Bio::Align::Subset\->\fInew()\fP"
+.IX Subsection "Bio::Align::Subset->new()"
+.Vb 1
+\&    $Obj = Bio::Align::Subset\->new(file => \*(Aqfilename\*(Aq, format => \*(Aqformat\*(Aq)
+.Ve
+.PP
+The new class method constructs a new Bio::Align::Subset object.
+The returned object can be used to retrieve, print and generate subsets
+from alignment objects. new accepts the following parameters:
+.IP "file" 1
+.IX Item "file"
+A file path to be opened for reading or writing.  The usual Perl
+conventions apply:
+.Sp
+.Vb 6
+\&   \*(Aqfile\*(Aq       # open file for reading
+\&   \*(Aq>file\*(Aq      # open file for writing
+\&   \*(Aq>>file\*(Aq     # open file for appending
+\&   \*(Aq+<file\*(Aq     # open file read/write
+\&   \*(Aqcommand |\*(Aq  # open a pipe from the command
+\&   \*(Aq| command\*(Aq  # open a pipe to the command
+.Ve
+.IP "format" 1
+.IX Item "format"
+Specify the format of the file.  Supported formats include fasta,
+genbank, embl, swiss (SwissProt), Entrez Gene and tracefile formats
+such as abi (\s-1ABI\s0) and scf. There are many more, for a complete listing
+see the SeqIO \s-1HOWTO\s0 (http://bioperl.open\-bio.org/wiki/HOWTO:SeqIO <http://bioperl.open-bio.org/wiki/HOWTO:SeqIO>).
+.Sp
+If no format is specified and a filename is given then the module will
+attempt to deduce the format from the filename suffix. If there is no
+suffix that Bioperl understands then it will attempt to guess the
+format based on file content. If this is unsuccessful then SeqIO will 
+throw a fatal error.
+.Sp
+The format name is case-insensitive: '\s-1FASTA\s0', 'Fasta' and 'fasta' are
+all valid.
+.Sp
+Currently, the tracefile formats (except for \s-1SCF\s0) require installation
+of the external Staden \*(L"io_lib\*(R" package, as well as the
+Bio::SeqIO::staden::read package available from the bioperl-ext
+repository.
+.SH "OBJECT METHODS"
+.IX Header "OBJECT METHODS"
+.SS "build_subset($index_list)"
+.IX Subsection "build_subset($index_list)"
+.Vb 1
+\&    my $subset = $obj\->build_subset([1,12,25,34,65,100,153,156,157,158,159]);
+.Ve
+.PP
+Build a new alignment with the specified codons in \f(CW$index_list\fR. It returns
+a hash with two keys:
+.IP "sequences" 2
+.IX Item "sequences"
+.Vb 1
+\&    Dumper($subset{sequences});
+.Ve
+.Sp
+An array with all the sequences from the new alignment.
+.IP "headers" 2
+.IX Item "headers"
+.Vb 1
+\&    Dumper($subset{identifiers});
+.Ve
+.Sp
+An array wiht all the identifiers with the same order than the sequences.
+.SH "ACCESSOR METHODS"
+.IX Header "ACCESSOR METHODS"
+.SS "get_count"
+.IX Subsection "get_count"
+.Vb 5
+\&    Title   : get_count
+\&    Usage   : $instance_no = $obj\->get_count
+\&    Function: 
+\&    Returns : Number of istances for this class
+\&    Args    :
+.Ve
+.SS "get_file"
+.IX Subsection "get_file"
+.Vb 5
+\&    Title   : get_file
+\&    Usage   : $file_path = $obj\->get_file
+\&    Function:
+\&    Returns : The file name of the alignment
+\&    Args    :
+.Ve
+.SS "get_format"
+.IX Subsection "get_format"
+.Vb 5
+\&    Title   : get_format
+\&    Usage   : $format = $obj\->get_format
+\&    Function:
+\&    Returns : The alignment format (fasta, phylip, etc.)
+\&    Args    :
+.Ve
+.SS "get_identifiers"
+.IX Subsection "get_identifiers"
+.Vb 5
+\&    Title   : get_identifiers
+\&    Usage   : $identifiers $obj\->get_identifiers
+\&    Function:
+\&    Returns : An array reference with all the identifiers in an alignment
+\&    Args    :
+.Ve
+.SS "get_seq_length"
+.IX Subsection "get_seq_length"
+.Vb 5
+\&    Title   : get_seq_length
+\&    Usage   : $long = $obj\->get_seq_length
+\&    Function:
+\&    Returns : The longitude of all the sequences in an alignment
+\&    Args    :
+.Ve
+.SS "get_sequences"
+.IX Subsection "get_sequences"
+.Vb 5
+\&    Title   : get_sequences
+\&    Usage   : $sequences = $obj\->get_sequences
+\&    Function:
+\&    Returns : An array reference with all the sequences in an alignment
+\&    Args    :
+.Ve
+.SH "MUTATOR METHODS"
+.IX Header "MUTATOR METHODS"
+.SS "set_file"
+.IX Subsection "set_file"
+.Vb 5
+\&    Title   : set_file
+\&    Usage   : $obj\->set_file(\*(Aqfilename\*(Aq)
+\&    Function: Set the file path for an alignment
+\&    Returns : 
+\&    Args    : String
+.Ve
+.SS "set_format"
+.IX Subsection "set_format"
+.Vb 5
+\&    Title   : set_format
+\&    Usage   : $obj\->set_format(\*(Aqfasta\*(Aq)
+\&    Function: Set the file format for an alignment
+\&    Returns :
+\&    Args    : String
+.Ve
+.SS "set_identifiers"
+.IX Subsection "set_identifiers"
+.Vb 5
+\&    Title   : set_identifiers
+\&    Usage   : $obj\->set_identifiers(\e@array_ids)
+\&    Function: Change the identifiers for all the sequences in the alignment
+\&    Returns :
+\&    Args    : List
+.Ve
+.SS "set_sequences"
+.IX Subsection "set_sequences"
+.Vb 5
+\&    Title   : set_sequences
+\&    Usage   : $obj\->set_sequences(\e@array_seqs)
+\&    Function: Change the sequences in the alignment
+\&    Returns :
+\&    Args    : List
+.Ve
+.SH "AUTHOR \- Hector Valverde"
+.IX Header "AUTHOR - Hector Valverde"
+Hector Valverde, \f(CW\*(C`<hvalverde@uma.es>\*(C'\fR
+.SH "CONTRIBUTORS"
+.IX Header "CONTRIBUTORS"
+Juan Carlos Aledo, \f(CW\*(C`<caledo@uma.es>\*(C'\fR
 .SH "BUGS"
 .IX Header "BUGS"
 Please report any bugs or feature requests to \f(CW\*(C`bug\-bio\-align\-subset at rt.cpan.org\*(C'\fR, or through
@@ -219,8 +363,6 @@ http://cpanratings.perl.org/d/Bio\-Align\-Subset <http://cpanratings.perl.org/d/
 Search \s-1CPAN\s0
 .Sp
 http://search.cpan.org/dist/Bio\-Align\-Subset/ <http://search.cpan.org/dist/Bio-Align-Subset/>
-.SH "ACKNOWLEDGEMENTS"
-.IX Header "ACKNOWLEDGEMENTS"
 .SH "LICENSE AND COPYRIGHT"
 .IX Header "LICENSE AND COPYRIGHT"
 Copyright 2012 Hector Valverde and Juan Carlos Aledo.
