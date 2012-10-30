@@ -23,12 +23,6 @@ our $VERSION = '0.01';
 
 
 =head1 SYNOPSIS
-
-Given an array of codon positions and an alignment, the function alignSubset
-returns a new alignment with the codons at those positions from the original
-alignment.
-
-Usage example:
     
     use strict;
     use warnings;
@@ -46,12 +40,20 @@ Usage example:
     
     # Create the object
     my $obj = Bio::Align::Subset->new(
-                                      inputfile => $filename,
+                                      file => $filename,
                                       format => $format
                                     );
     
     # View the result
     print Dumper($obj->build_subset($subset));
+
+=cut
+
+=head1 DESCRIPTION
+
+Given an array of codon positions and an alignment, the function
+L<Bio::Align::Subset-E<gt>build_subset> returns a new alignment with the codons at
+those positions from the original alignment.
 
 =cut
 
@@ -62,7 +64,50 @@ Usage example:
 
 =head1 CONSTRUCTOR
 
-=head2 Bio::Align::Subset->new
+=head2 Bio::Align::Subset->new()
+
+    $Obj = Bio::Align::Subset->new(file => 'filename', format => 'format')
+
+The L<new> class method constructs a new L<Bio::Align::Subset> object.
+The returned object can be used to retrieve, print and generate subsets
+from alignment objects. L<new> accepts the following parameters:
+
+=over 1
+
+=item file
+
+A file path to be opened for reading or writing.  The usual Perl
+conventions apply:
+
+   'file'       # open file for reading
+   '>file'      # open file for writing
+   '>>file'     # open file for appending
+   '+<file'     # open file read/write
+   'command |'  # open a pipe from the command
+   '| command'  # open a pipe to the command
+
+=item format
+
+Specify the format of the file.  Supported formats include fasta,
+genbank, embl, swiss (SwissProt), Entrez Gene and tracefile formats
+such as abi (ABI) and scf. There are many more, for a complete listing
+see the SeqIO HOWTO (L<http://bioperl.open-bio.org/wiki/HOWTO:SeqIO>).
+
+If no format is specified and a filename is given then the module will
+attempt to deduce the format from the filename suffix. If there is no
+suffix that Bioperl understands then it will attempt to guess the
+format based on file content. If this is unsuccessful then SeqIO will 
+throw a fatal error.
+
+The format name is case-insensitive: 'FASTA', 'Fasta' and 'fasta' are
+all valid.
+
+Currently, the tracefile formats (except for SCF) require installation
+of the external Staden "io_lib" package, as well as the
+Bio::SeqIO::staden::read package available from the bioperl-ext
+repository.
+
+=back
 
 =cut
 
@@ -72,7 +117,7 @@ Usage example:
 {  
     # A list of all attributes wiht default values and read/write/required properties
     my %_attribute_properties = (
-        _inputfile => ["????", "read.required"],
+        _file => ["????", "read.required"],
         _format    => ["????", "read.required"],
         _identifiers   => ["????", "read.write"   ],
         _sequences => ["????", "read.write"   ],
@@ -161,7 +206,7 @@ sub _extract_sequences{
     my @sequences;
     
     my $seqIO = Bio::SeqIO->new(
-                             -file   => $self->get_inputfile,
+                             -file   => $self->get_file,
                              -format => $self->get_format
                             );
     
@@ -180,6 +225,33 @@ sub _extract_sequences{
     $self->set_sequences(\@sequences);
     
 }
+
+=head1 OBJECT METHODS
+
+=head2 build_subset($index_list)
+
+    my $subset = $obj->build_subset([1,12,25,34,65,100,153,156,157,158,159]);
+
+Build a new alignment with the specified codons in C<$index_list>. It returns
+a hash with two keys:
+
+=over 2
+
+=item sequences
+
+    Dumper($subset{sequences});
+    
+An array with all the sequences from the new alignment.
+
+=item headers
+
+    Dumper($subset{identifiers});
+    
+An array wiht all the identifiers with the same order than the sequences.
+
+=back
+
+=cut
 
 #
 # Build a subset
@@ -204,7 +276,7 @@ sub build_subset{
     
     # Build the complete hash
     $new_alignment{sequences} = \@new_sequences;
-    $new_alignment{headers}   = $self->get_identifiers;
+    $new_alignment{identifiers}   = $self->get_identifiers;
     
     return \%new_alignment;
     
@@ -280,9 +352,9 @@ sub build_subset{
 # This kind of method is called Accesor
 # Method. It returns the value of a key
 # and avoid the direct acces to the inner
-# value of $obj->{_inputfile}.
+# value of $obj->{_file}.
 ###############################################################################
-sub get_inputfile { $_[0] -> {_inputfile} }
+sub get_file { $_[0] -> {_file} }
 sub get_format    { $_[0] -> {_format}    }
 sub get_sequences { $_[0] -> {_sequences} }
 sub get_identifiers   { $_[0] -> {_identifiers}   }
@@ -293,8 +365,8 @@ sub get_seq_length{ $_[0] -> {_seq_length}}
 ###############################################################################
 # Mutator Methods
 ###############################################################################
-sub set_inputfile { my ($self, $inputfile) = @_;
-                    $self-> {_inputfile} = $inputfile if $inputfile;
+sub set_file { my ($self, $file) = @_;
+                    $self-> {_file} = $file if $file;
                   }
 sub set_format    { my ($self, $format) = @_;
                     $self-> {_format} = $format if $format;
@@ -314,9 +386,13 @@ sub set_sequences { my ($self, $sequences) = @_;
 ###############################################################################
 ###############################################################################
 
-=head1 AUTHOR
+=head1 AUTHOR - Hector Valverde
 
-Hector Valverde and Juan Carlos Aledo, C<< <hvalverde@uma.es> >>
+Hector Valverde, C<< <hvalverde@uma.es> >>
+
+=head1 CONTRIBUTORS
+
+Juan Carlos Aledo, C<< <caledo@uma.es> >>
 
 =head1 BUGS
 
@@ -353,10 +429,6 @@ L<http://cpanratings.perl.org/d/Bio-Align-Subset>
 L<http://search.cpan.org/dist/Bio-Align-Subset/>
 
 =back
-
-
-=head1 ACKNOWLEDGEMENTS
-
 
 =head1 LICENSE AND COPYRIGHT
 
