@@ -15,11 +15,11 @@ Bio::Align::Subset - A BioPerl module to generate new alignments as subset from 
 
 =head1 VERSION
 
-Version 0.01
+Version 0.02
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 
 =head1 SYNOPSIS
@@ -269,7 +269,7 @@ sub build_subset{
         # Initialite a new string for the new sequence
         my $new_sequence = "";
         for my $index (@{$subset}){
-            $new_sequence.= substr(${$self->get_sequences}[$i],$index,3);
+            $new_sequence.= substr(${$self->get_sequences}[$i],$index-1,3);
         }
         push(@new_sequences, $new_sequence);
     }
