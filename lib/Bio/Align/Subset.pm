@@ -8,17 +8,19 @@ use warnings;
 use Carp;
 use Bio::SeqIO;
 
+use base("Bio::Root::Root");
+
 =head1 NAME
 
 Bio::Align::Subset - A BioPerl module to generate new alignments as subset from larger alignments
 
 =head1 VERSION
 
-Version 1.25
+Version 1.26
 
 =cut
 
-our $VERSION = '1.25';
+our $VERSION = '1.26';
 
 
 =head1 SYNOPSIS
@@ -265,9 +267,12 @@ sub build_subset{
     # Build a new Bio::LocatableSeq obj for each sequence
     for(my $i=0;$i<=$#identifiers;$i++){
         
+        my $id = substr($identifiers[$i],0,9);
+        my $iden_plus_num = $i.$id;
+        
         # Create such object
         my $newSeq = Bio::LocatableSeq->new(-seq   => $new_sequences[$i],
-                                            -id    => substr($identifiers[$i],0,9),
+                                            -id    => substr($iden_plus_num,0,9),
                                             -start => 0,
                                             -end   => length($new_sequences[$i]));
         
@@ -314,13 +319,13 @@ sub build_subset{
         
         
         # 1. The chain must be a DNA sequence
-        $self->_isdna($sequence) ? 1 : carp("\nWARNING: The following sequence does not seems as a dna/rna (ATGCU) sequence:\n\n<< $sequence >>\n");
+        $self->_isdna($sequence) ? 1 : $self->warn("\nThe following sequence does not seems as a dna/rna (ATGCU) sequence:\n\n<< $sequence >>\n");
         
         # 2. Also, all the sequences must be equal. But if $_sequence_length
         # has not been updated, it takes the value of the length of this sequence.
         if($self->get_seq_length == 0){
             # The input file must be wrapped (non untermitated codons)
-            $seq_length % 3 == 0 ? 1 : croak("The sequence length is not multiple of 3 ($seq_length)");
+            $seq_length % 3 == 0 ? 1 : $self->throw("The sequence length is not multiple of 3 ($seq_length)");
             $self->_set_sequence_length($seq_length);
         }else{
             $self->_check_sequence_length($seq_length) ? 1 : croak("A sequence length does not match with the length of the whole alignment");
