@@ -7,7 +7,6 @@ no strict "refs";
 use warnings;
 use Carp;
 use Bio::SeqIO;
-use base("Bio::AlignIO");
 
 =head1 NAME
 
@@ -15,11 +14,11 @@ Bio::Align::Subset - A BioPerl module to generate new alignments as subset from 
 
 =head1 VERSION
 
-Version 1.04
+Version 1.05
 
 =cut
 
-our $VERSION = '1.04';
+our $VERSION = '1.05';
 
 
 =head1 SYNOPSIS
