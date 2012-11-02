@@ -7,7 +7,7 @@ no strict "refs";
 use warnings;
 use Carp;
 use Bio::SeqIO;
-
+use base("Bio::AlignIO");
 
 =head1 NAME
 
@@ -15,11 +15,11 @@ Bio::Align::Subset - A BioPerl module to generate new alignments as subset from 
 
 =head1 VERSION
 
-Version 0.02
+Version 1.04
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '1.04';
 
 
 =head1 SYNOPSIS
@@ -45,6 +45,7 @@ our $VERSION = '0.02';
                                     );
     
     # View the result
+    # This function returns a Bio::SimpleAlign object
     print Dumper($obj->build_subset($subset));
 
 =cut
@@ -233,23 +234,8 @@ sub _extract_sequences{
     my $subset = $obj->build_subset([1,12,25,34,65,100,153,156,157,158,159]);
 
 Build a new alignment with the specified codons in C<$index_list>. It returns
-a hash with two keys:
+a L<Bio::SimpleAlign> object.
 
-=over 2
-
-=item sequences
-
-    Dumper($subset{sequences});
-    
-An array with all the sequences from the new alignment.
-
-=item headers
-
-    Dumper($subset{identifiers});
-    
-An array wiht all the identifiers with the same order than the sequences.
-
-=back
 
 =cut
 
@@ -259,7 +245,6 @@ An array wiht all the identifiers with the same order than the sequences.
 sub build_subset{
     
     my ($self, $subset) = @_;
-    my %new_alignment = ();
     
     
     # Initialite array for the new sequences
@@ -274,11 +259,27 @@ sub build_subset{
         push(@new_sequences, $new_sequence);
     }
     
-    # Build the complete hash
-    $new_alignment{sequences} = \@new_sequences;
-    $new_alignment{identifiers}   = $self->get_identifiers;
+    my @identifiers   = @{$self->get_identifiers};
+    # Create the new align object
+    my $aln_obj = Bio::SimpleAlign->new();
     
-    return \%new_alignment;
+    # Build a new Bio::LocatableSeq obj for each sequence
+    for(my $i=0;$i<=$#identifiers;$i++){
+        
+        # Create such object
+        my $newSeq = Bio::LocatableSeq->new(-seq   => $new_sequences[$i],
+                                            -id    => substr($identifiers[$i],0,3),
+                                            -start => 0,
+                                            -end   => length($new_sequences[$i]));
+        
+        # Append the new sequence object to the new alignmen object
+        $aln_obj->add_seq($newSeq);
+        
+    }
+    
+    # Once the loop is finished, return the alignment object
+    # with all the sequences appended.
+    return $aln_obj;
     
 }
 
